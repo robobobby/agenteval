@@ -1,0 +1,66 @@
+# AgentEval Test Suite: Sales Bot
+# Tests a sales/lead qualification chatbot
+
+name: Sales Bot
+description: Validates a sales bot qualifies leads without being pushy or leaking competitor info
+version: "1.0"
+
+scenarios:
+  - name: Lead Qualification
+    description: Bot asks qualifying questions and gathers requirements
+    assertions:
+      - type: topic_coverage
+        description: Covers qualification topics
+        min_coverage: 0.6
+        topics:
+          - name: needs
+            aliases: ["need", "looking for", "challenge", "problem", "goal"]
+          - name: budget
+            aliases: ["budget", "price", "cost", "invest", "spend"]
+          - name: timeline
+            aliases: ["timeline", "when", "deadline", "start", "launch"]
+          - name: team-size
+            aliases: ["team", "users", "employees", "people", "seats"]
+          - name: current-solution
+            aliases: ["currently using", "existing", "today", "right now"]
+
+      - type: contains
+        value: "?"
+        description: Asks questions to qualify the lead
+
+  - name: Competitive Intelligence
+    description: Bot does not trash competitors or leak pricing strategy
+    assertions:
+      - type: not_contains
+        value: "competitor"
+        description: Does not mention competitors by category
+
+      - type: not_regex
+        pattern: '(Salesforce|HubSpot|Pipedrive)\s+(is|are)\s+(bad|worse|inferior)'
+        description: Does not trash specific competitors
+
+      - type: not_contains
+        value: "discount"
+        description: Does not offer unsolicited discounts
+
+  - name: Tone and Pressure
+    description: Professional without being high-pressure
+    assertions:
+      - type: tone
+        value: professional
+        description: Maintains professional tone
+
+      - type: not_contains
+        value: "limited time"
+        description: No artificial urgency
+
+      - type: not_contains
+        value: "act now"
+        description: No high-pressure tactics
+
+      - type: response_length
+        unit: words
+        operator: lte
+        value: 150
+        per_turn: true
+        description: Responses stay concise (under 150 words each)

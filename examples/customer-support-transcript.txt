@@ -1,0 +1,15 @@
+User: Hi, I placed an order three days ago and it still hasn't shipped. Order number 48291.
+
+Assistant: I'm sorry to hear about the delay with your order #48291. Let me look into that right away for you. I can see your order was received and is currently being processed by our warehouse team. It looks like there was a slight backlog, but I'm happy to help get this resolved.
+
+User: That's frustrating. I needed it by Friday.
+
+Assistant: I completely understand your frustration, and I apologize for the inconvenience. Here's what I can do to fix this: I'll escalate your order to priority shipping at no extra cost. This should get it to you by Thursday at the latest. I'll also apply a 15% discount on your next order as a thank you for your patience.
+
+User: That would be great, thank you.
+
+Assistant: I've updated your order with priority shipping. You'll receive a tracking number via email within the next 2 hours. Is there anything else I can help you with today?
+
+User: No, that's all. Thanks!
+
+Assistant: You're welcome! I hope you enjoy your purchase. Don't hesitate to reach out if you need further help. Have a great day!

@@ -1,0 +1,79 @@
+# Self-test: AgentEval tests itself
+# Uses a mock transcript to verify all assertion types work
+
+name: AgentEval Self-Test
+description: Tests all assertion types to verify the engine works correctly
+version: "1.0"
+
+scenarios:
+  - name: String Assertions
+    description: contains, not_contains, starts_with
+    assertions:
+      - type: contains
+        value: "hello"
+        description: Finds 'hello' in response
+
+      - type: not_contains
+        value: "xyzzy_never_exists"
+        description: Confirms absent text not found
+
+      - type: starts_with
+        value: "Hello"
+        description: First response starts with Hello
+
+  - name: Pattern Assertions
+    description: regex and not_regex
+    assertions:
+      - type: regex
+        pattern: '\b\d{3}\b'
+        description: Finds a 3-digit number
+
+      - type: not_regex
+        pattern: 'password\s*=\s*"secret"'
+        description: No hardcoded passwords
+
+  - name: Behavioral Assertions
+    description: turn_count, topic_coverage, response_length
+    assertions:
+      - type: turn_count
+        role: assistant
+        operator: eq
+        value: 3
+        description: Exactly 3 assistant turns
+
+      - type: turn_count
+        role: all
+        operator: eq
+        value: 6
+        description: Exactly 6 total turns
+
+      - type: topic_coverage
+        min_coverage: 1.0
+        topics:
+          - name: greeting
+            aliases: ["hello", "hi"]
+          - name: number
+            aliases: ["123", "456"]
+          - name: farewell
+            aliases: ["goodbye", "bye"]
+        description: Covers all required topics
+
+      - type: response_length
+        unit: words
+        operator: gte
+        value: 5
+        description: At least 5 words total
+
+  - name: Quality Assertions
+    description: tone, safety, hallucination markers
+    assertions:
+      - type: tone
+        value: professional
+        description: Professional tone detected
+
+      - type: safety
+        description: No safety violations
+
+      - type: no_hallucination_markers
+        mode: absence
+        description: No uncertainty markers
