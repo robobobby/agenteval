@@ -704,6 +704,89 @@ def format_json(report: EvalReport) -> str:
     return json.dumps(data, indent=2)
 
 
+# ─── Comparison Formatters ─────────────────────────────────────────────────────
+
+def format_compare_text(baseline: EvalReport, candidate: EvalReport) -> str:
+    """Format a side-by-side comparison of two eval runs."""
+    lines = []
+    lines.append("=" * 60)
+    lines.append("  AgentEval Comparison Report")
+    lines.append("=" * 60)
+    lines.append(f"  Baseline:  {baseline.transcript_file} ({baseline.grade}, {baseline.overall_score:.1f}%)")
+    lines.append(f"  Candidate: {candidate.transcript_file} ({candidate.grade}, {candidate.overall_score:.1f}%)")
+    lines.append(f"  Tests:     {baseline.test_file}")
+
+    diff = candidate.overall_score - baseline.overall_score
+    arrow = "↑" if diff > 0 else ("↓" if diff < 0 else "→")
+    lines.append(f"  Delta:     {arrow} {diff:+.1f}%")
+    lines.append("=" * 60)
+
+    # Per-scenario comparison
+    for i, (sa, sb) in enumerate(zip(baseline.scenarios, candidate.scenarios)):
+        lines.append("")
+        sdiff = sb.score - sa.score
+        sarrow = "↑" if sdiff > 0 else ("↓" if sdiff < 0 else "→")
+        icon = "🟢" if sdiff > 0 else ("🔴" if sdiff < 0 else "⚪")
+        lines.append(f"{icon} {sa.name}: {sa.score:.0f}% → {sb.score:.0f}% ({sarrow} {sdiff:+.1f}%)")
+
+        # Show assertion-level regressions and improvements
+        for aa, ab in zip(sa.assertions, sb.assertions):
+            if aa.verdict != ab.verdict:
+                if ab.verdict == Verdict.PASS:
+                    lines.append(f"    ✅ FIXED: {aa.description}")
+                elif ab.verdict == Verdict.FAIL:
+                    lines.append(f"    ❌ REGRESSED: {aa.description}")
+
+    lines.append("")
+    lines.append("-" * 60)
+    verdict = "IMPROVED" if diff > 0 else ("REGRESSED" if diff < 0 else "NO CHANGE")
+    lines.append(f"  Verdict: {verdict} ({baseline.grade} → {candidate.grade})")
+    lines.append("-" * 60)
+    return "\n".join(lines)
+
+
+def format_compare_json(baseline: EvalReport, candidate: EvalReport) -> str:
+    """Format comparison as JSON."""
+    diff = candidate.overall_score - baseline.overall_score
+    data = {
+        "verdict": "improved" if diff > 0 else ("regressed" if diff < 0 else "no_change"),
+        "delta": round(diff, 1),
+        "baseline": {
+            "transcript": baseline.transcript_file,
+            "grade": baseline.grade,
+            "score": round(baseline.overall_score, 1),
+            "passed": baseline.total_passed,
+            "total": baseline.total_assertions,
+        },
+        "candidate": {
+            "transcript": candidate.transcript_file,
+            "grade": candidate.grade,
+            "score": round(candidate.overall_score, 1),
+            "passed": candidate.total_passed,
+            "total": candidate.total_assertions,
+        },
+        "scenarios": [],
+    }
+    for sa, sb in zip(baseline.scenarios, candidate.scenarios):
+        sdiff = sb.score - sa.score
+        regressions = []
+        improvements = []
+        for aa, ab in zip(sa.assertions, sb.assertions):
+            if aa.verdict == Verdict.PASS and ab.verdict == Verdict.FAIL:
+                regressions.append(aa.description)
+            elif aa.verdict == Verdict.FAIL and ab.verdict == Verdict.PASS:
+                improvements.append(aa.description)
+        data["scenarios"].append({
+            "name": sa.name,
+            "baseline_score": round(sa.score, 1),
+            "candidate_score": round(sb.score, 1),
+            "delta": round(sdiff, 1),
+            "regressions": regressions,
+            "improvements": improvements,
+        })
+    return json.dumps(data, indent=2)
+
+
 # ─── CLI ───────────────────────────────────────────────────────────────────────
 
 def main():
@@ -718,6 +801,13 @@ def main():
     run_parser.add_argument("--transcript", "-t", required=True, help="Transcript file")
     run_parser.add_argument("--format", "-f", choices=["text", "json"], default="text")
     run_parser.add_argument("--output", "-o", help="Output file (default: stdout)")
+
+    compare_parser = subparsers.add_parser("compare", help="Compare two transcripts with the same tests")
+    compare_parser.add_argument("test_file", help="YAML test suite file")
+    compare_parser.add_argument("--baseline", "-b", required=True, help="Baseline transcript")
+    compare_parser.add_argument("--candidate", "-c", required=True, help="Candidate transcript")
+    compare_parser.add_argument("--format", "-f", choices=["text", "json"], default="text")
+    compare_parser.add_argument("--output", "-o", help="Output file (default: stdout)")
 
     validate_parser = subparsers.add_parser("validate", help="Validate a test suite")
     validate_parser.add_argument("test_file", help="YAML test suite file")
@@ -750,6 +840,32 @@ def main():
 
         # Exit code: 0 if all pass, 1 if any fail
         sys.exit(0 if report.total_failed == 0 else 1)
+
+    elif args.command == "compare":
+        test_path = Path(args.test_file)
+        baseline_path = Path(args.baseline)
+        candidate_path = Path(args.candidate)
+
+        for p, label in [(test_path, "Test file"), (baseline_path, "Baseline"), (candidate_path, "Candidate")]:
+            if not p.exists():
+                print(f"Error: {label} not found: {p}", file=sys.stderr)
+                sys.exit(1)
+
+        report_a = run_eval(test_path, baseline_path)
+        report_b = run_eval(test_path, candidate_path)
+
+        if args.format == "json":
+            output = format_compare_json(report_a, report_b)
+        else:
+            output = format_compare_text(report_a, report_b)
+
+        if args.output:
+            Path(args.output).write_text(output, encoding="utf-8")
+            print(f"Comparison written to {args.output}")
+        else:
+            print(output)
+
+        sys.exit(0)
 
     elif args.command == "validate":
         test_path = Path(args.test_file)

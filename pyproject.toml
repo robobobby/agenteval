@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "agenteval"
+version = "0.1.0"
+description = "Behavior test framework for AI agents. Define tests in YAML, run against transcripts, get scored reports."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    {name = "robobobby"}
+]
+keywords = ["ai", "agents", "testing", "evaluation", "quality"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+agenteval = "agenteval:main"
+
+[project.urls]
+Homepage = "https://github.com/robobobby/agenteval"
+Documentation = "https://robobobby.github.io/agenteval"
+
+[tool.setuptools]
+py-modules = ["agenteval"]

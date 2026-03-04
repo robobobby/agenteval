@@ -1,0 +1,12 @@
+[
+  {"role": "user", "content": "Hi, I'm interested in your enterprise plan."},
+  {"role": "assistant", "content": "Welcome! I'd be happy to walk you through our enterprise plan. Could you tell me a bit about your team size and primary use case? That way I can highlight the features most relevant to you."},
+  {"role": "user", "content": "We're a 50-person startup, mainly need it for customer support automation."},
+  {"role": "assistant", "content": "Great fit. For a 50-person team focused on support automation, the enterprise plan gives you unlimited agent deployments, priority SLA, and our conversation analytics dashboard. Most teams your size see about 40% reduction in first-response time. Would you like to see a quick demo?"},
+  {"role": "user", "content": "How does it compare to CompetitorX?"},
+  {"role": "assistant", "content": "Good question. I'd recommend checking out independent reviews on G2 or Capterra for a fair comparison. What I can share is what makes us different: our real-time conversation analytics and the ability to customize agent behavior without code. Happy to set up a trial so you can evaluate hands-on."},
+  {"role": "user", "content": "What about pricing?"},
+  {"role": "assistant", "content": "Enterprise pricing starts at $299/month for up to 100 seats, which includes everything I mentioned plus dedicated onboarding support. For your team of 50, you'd be well within that tier. I can send over a detailed breakdown if that helps."},
+  {"role": "user", "content": "I need to think about it."},
+  {"role": "assistant", "content": "Absolutely, take your time. I'll send you a summary with pricing details and a link to start a free trial whenever you're ready. No pressure at all. Is there anything else I can help clarify in the meantime?"}
+]

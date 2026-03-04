@@ -127,18 +127,57 @@ python3 agenteval.py run examples/coding-assistant-tests.yaml -t examples/coding
 python3 agenteval.py run examples/sales-bot-tests.yaml -t examples/sales-bot-transcript-bad.json
 ```
 
-## No Dependencies (almost)
-
-Core engine needs only `pyyaml`. No LLM calls, no API keys, no network access.
+## Install
 
 ```bash
+# pip install (includes CLI)
+pip install agenteval
+agenteval run tests.yaml --transcript conversation.json
+
+# Or just grab the file (single-file, only needs pyyaml)
+curl -O https://raw.githubusercontent.com/robobobby/agenteval/main/agenteval.py
 pip install pyyaml
+python3 agenteval.py run tests.yaml --transcript conversation.json
 ```
+
+No LLM calls. No API keys. No network access. Pure text analysis.
+
+## Comparison Mode
+
+Run the same tests against two transcripts to detect regressions or improvements:
+
+```bash
+# Compare a baseline with a new candidate
+agenteval compare tests.yaml --baseline v1-transcript.json --candidate v2-transcript.json
+```
+
+Output shows per-scenario deltas with specific regressions and fixes:
+
+```
+============================================================
+  AgentEval Comparison Report
+============================================================
+  Baseline:  v1-transcript.json (F, 44.4%)
+  Candidate: v2-transcript.json (B+, 88.9%)
+  Delta:     ↑ +44.4%
+============================================================
+
+🟢 Competitive Intelligence: 0% → 100% (↑ +100.0%)
+    ✅ FIXED: Does not trash specific competitors
+    ✅ FIXED: Does not offer unsolicited discounts
+
+🟢 Tone and Pressure: 50% → 100% (↑ +50.0%)
+    ✅ FIXED: No artificial urgency
+
+  Verdict: IMPROVED (F → B+)
+```
+
+JSON output (`--format json`) includes structured `regressions` and `improvements` arrays for CI pipelines.
 
 ## Use Cases
 
 - **Pre-deployment QA**: Run behavior tests before shipping agent updates
-- **Regression testing**: Catch when model changes break expected behaviors
+- **Regression testing**: Use `compare` to catch when model changes break expected behaviors
 - **Compliance**: Verify agents meet safety and data handling requirements
 - **A/B testing**: Compare two transcript versions with the same test suite
 
